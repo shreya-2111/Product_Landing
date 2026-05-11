@@ -1,0 +1,55 @@
+================================================================
+        AuralX Pro — Technical Overview
+================================================================
+
+TECH STACK
+----------
+  React 19 + Vite 8       |  Framework & build tool
+  Three.js + R3F + Drei   |  3D model rendering (GLB)
+  GSAP + ScrollTrigger    |  Timeline & scroll animations
+  Framer Motion           |  Spring physics & transitions
+  Tailwind CSS v4         |  Utility styling
+  Lenis                   |  Smooth scrolling
+
+
+ANIMATIONS & INTERACTIONS
+--------------------------
+  Page Load     GSAP timeline — glow blooms, rings spring-expand,
+                3D model scales 0.01→1 and rotates into view,
+                text staggers in. All chained for one fluid reveal.
+
+  3D Model      GLB loaded via useGLTF, auto-centered with Box3,
+                normalized scale. useFrame drives circular orbit
+                (sin/cos), mouse tilt via lerp, subtle roll.
+
+  Mouse         useMotionValue + useSpring (stiffness 50, damping 16)
+                maps cursor to rotateX/Y — luxury 3D tilt on hover.
+
+  Scroll        ScrollTrigger pins sections, scrubs scene transitions.
+                Stories fade out upward, next fades in from below.
+
+  Cursor Glow   Fixed radial-gradient div (400px outer + 80px core)
+                trails cursor via spring — purple spotlight effect.
+
+  Lenis         Custom easing (1 - pow(2,-10t)) synced with
+                ScrollTrigger.update on every tick.
+
+
+DESIGN DECISIONS
+-----------------
+  Color       #050816 base — near-black with blue tint so purple/
+              cyan accents hit maximum contrast.
+
+  Layout      Split hero (text left, 3D right) mirrors Apple pages.
+              Model at 50% viewport = visual anchor, not decoration.
+
+  Cards       backdrop-filter blur(16px) + rgba white border =
+              glassmorphism that works on any dark background.
+
+  Type        clamp() fluid size, letter-spacing -0.04em,
+              line-height 0.9 — tight editorial feel (Inter 900).
+
+  Rings       Two conic-gradient rings spin opposite directions at
+              different speeds — energy without distraction.
+
+================================================================
