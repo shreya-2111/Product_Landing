@@ -33,7 +33,6 @@ const About = () => {
   const isMobile   = useIsMobile()
 
   useEffect(() => {
-    // Counter animation
     Array.from(statsRef.current.children).forEach((card, i) => {
       const el  = card.querySelector('.count-val')
       const end = parseInt(el.dataset.val)
@@ -112,7 +111,6 @@ const About = () => {
                 have produced the most refined wireless headphone ever made.
               </p>
 
-              {/* Pillars */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {pillars.map((p, i) => (
                   <motion.div
@@ -144,7 +142,6 @@ const About = () => {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            {/* Main visual box */}
             <div style={{
               aspectRatio: '1',
               borderRadius: '32px',
@@ -153,23 +150,19 @@ const About = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               position: 'relative', overflow: 'hidden',
             }}>
-              {/* Rotating ring */}
+              {/* Rotating rings — desktop only */}
               <motion.div
                 style={{
-                  position: 'absolute',
-                  width: '70%', height: '70%',
-                  borderRadius: '50%',
-                  border: '1px solid rgba(124,58,237,0.25)',
+                  position: 'absolute', width: '70%', height: '70%',
+                  borderRadius: '50%', border: '1px solid rgba(124,58,237,0.25)',
                 }}
                 animate={isMobile ? {} : { rotate: 360 }}
                 transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
               />
               <motion.div
                 style={{
-                  position: 'absolute',
-                  width: '50%', height: '50%',
-                  borderRadius: '50%',
-                  border: '1px solid rgba(6,182,212,0.2)',
+                  position: 'absolute', width: '50%', height: '50%',
+                  borderRadius: '50%', border: '1px solid rgba(6,182,212,0.2)',
                 }}
                 animate={isMobile ? {} : { rotate: -360 }}
                 transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
@@ -177,8 +170,7 @@ const About = () => {
 
               {/* Center glow */}
               <div style={{
-                width: '40%', height: '40%',
-                borderRadius: '50%',
+                width: '40%', height: '40%', borderRadius: '50%',
                 background: 'radial-gradient(circle, rgba(124,58,237,0.5) 0%, transparent 70%)',
                 filter: 'blur(20px)',
               }} />
@@ -188,9 +180,7 @@ const About = () => {
                 <motion.div
                   key={i}
                   style={{
-                    position: 'absolute',
-                    width: '8px', height: '8px',
-                    borderRadius: '50%',
+                    position: 'absolute', width: '8px', height: '8px', borderRadius: '50%',
                     background: i % 2 === 0 ? '#7c3aed' : '#06b6d4',
                     top: `${50 - 38 * Math.cos(deg * Math.PI / 180)}%`,
                     left: `${50 + 38 * Math.sin(deg * Math.PI / 180)}%`,
@@ -200,21 +190,18 @@ const About = () => {
                 />
               ))}
 
-              {/* Center label */}
               <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
                 <div style={{ fontSize: '0.7rem', color: '#7c3aed', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   AuralX Chip X1
                 </div>
-                <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>
-                  4×
-                </div>
+                <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>4×</div>
                 <div style={{ fontSize: '0.7rem', color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.25rem' }}>
                   Faster DSP
                 </div>
               </div>
             </div>
 
-            {/* Floating badge */}
+            {/* Floating badges — static on mobile */}
             <motion.div
               className="glass-strong"
               style={{
@@ -246,7 +233,6 @@ const About = () => {
         </div>
       </div>
 
-      {/* Background */}
       <div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '40rem', height: '20rem', background: 'rgba(124,58,237,0.05)', borderRadius: '50%', filter: 'blur(80px)', pointerEvents: 'none' }} />
     </section>
   )
