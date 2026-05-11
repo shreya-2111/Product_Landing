@@ -1,8 +1,8 @@
-import { useEffect, useRef, Suspense, useState } from 'react'
+import { useEffect, useRef, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, Environment } from '@react-three/drei'
 import * as THREE from 'three'
@@ -294,9 +294,53 @@ const ProductShowcase = () => {
           </p>
         </motion.div>
 
-        {/* Mobile: carousel with single Canvas */}
+        {/* Mobile: 2×2 grid with lightweight Canvas per card */}
         {isMobile ? (
-          <MobileShowcase />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            {views.map((v, i) => (
+              <div key={i} className="product-card gradient-border" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                {/* 3D viewer */}
+                <div style={{
+                  position: 'relative',
+                  width: '100%', aspectRatio: '1',
+                  background: `radial-gradient(ellipse at 50% 50%, ${v.accent}25 0%, transparent 70%)`,
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    backgroundImage: `linear-gradient(${v.accent}10 1px, transparent 1px), linear-gradient(90deg, ${v.accent}10 1px, transparent 1px)`,
+                    backgroundSize: '20px 20px', opacity: 0.4, pointerEvents: 'none',
+                  }} />
+                  <span style={{
+                    position: 'absolute', top: '0.5rem', left: '0.5rem',
+                    fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.1em',
+                    color: v.accent, opacity: 0.9, zIndex: 10,
+                  }}>{v.label}</span>
+                  <Canvas
+                    camera={{ position: [0, 0, 2.4], fov: 42 }}
+                    gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
+                    style={{ width: '100%', height: '100%', background: 'transparent', display: 'block' }}
+                  >
+                    <ambientLight intensity={1.2} />
+                    <directionalLight position={[4, 6, 4]} intensity={1.8} color="#ffffff" />
+                    <pointLight position={[0, 3, 2]} intensity={2} color={v.accent} />
+                    <Environment preset="night" />
+                    <Suspense fallback={null}>
+                      <MiniModel rotationY={v.rotationY} rotationX={v.rotationX} autoSpin={v.autoSpin} isMobile={true} />
+                    </Suspense>
+                  </Canvas>
+                </div>
+                {/* Card info */}
+                <div style={{ padding: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>{v.title}</h3>
+                    <ArrowUpRight size={12} color={v.accent} />
+                  </div>
+                  <p style={{ fontSize: '0.7rem', color: '#64748b', lineHeight: 1.5 }}>{v.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           /* Desktop: 4-card grid */
           <div ref={cardsRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
