@@ -328,16 +328,14 @@ export default function Hero() {
             position: 'relative',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             minHeight: isMobile ? '320px' : '520px',
+            width: '100%',
           }}
         >
-          {/*
-            Single anchor — rings, glow, image all share this box.
-          */}
           <motion.div
             style={{
               position: 'relative',
-              width: isMobile ? '300px' : '500px',
-              height: isMobile ? '300px' : '500px',
+              width: isMobile ? 'min(300px, 85vw)' : '500px',
+              height: isMobile ? 'min(300px, 85vw)' : '500px',
               flexShrink: 0,
               rotateX: isMobile ? 0 : rotX,
               rotateY: isMobile ? 0 : rotY,
@@ -386,7 +384,7 @@ export default function Hero() {
               filter: 'blur(22px)', pointerEvents: 'none', zIndex: 2,
             }} />
 
-            {/* ── Canvas fills the 500×500 box — GLB model inside ── */}
+            {/* ── Canvas fills the box — GLB model inside ── */}
             <Canvas
               camera={{ position: [0, 0, 3.2], fov: 42 }}
               gl={{ antialias: !isMobile, alpha: true, powerPreference: isMobile ? 'low-power' : 'high-performance' }}
@@ -394,6 +392,7 @@ export default function Hero() {
                 position: 'absolute', inset: 0,
                 width: '100%', height: '100%',
                 background: 'transparent', zIndex: 10,
+                display: 'block',
               }}
             >
               <ambientLight intensity={isMobile ? 1.2 : 0.5} />

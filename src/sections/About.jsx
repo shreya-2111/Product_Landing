@@ -82,7 +82,7 @@ const About = () => {
         </div>
 
         {/* Two-column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '5rem', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '3rem', alignItems: 'center' }}>
 
           {/* Left — text */}
           <div>
@@ -149,6 +149,7 @@ const About = () => {
               border: '1px solid rgba(124,58,237,0.2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               position: 'relative', overflow: 'hidden',
+              minHeight: '280px',
             }}>
               {/* Rotating rings — desktop only */}
               <motion.div
@@ -201,11 +202,13 @@ const About = () => {
               </div>
             </div>
 
-            {/* Floating badges — static on mobile */}
+            {/* Floating badges — static on mobile, offset on desktop */}
             <motion.div
               className="glass-strong"
               style={{
-                position: 'absolute', bottom: '-1.5rem', left: '-1.5rem',
+                position: 'absolute',
+                bottom: isMobile ? '0.5rem' : '-1.5rem',
+                left: isMobile ? '0.5rem' : '-1.5rem',
                 borderRadius: '16px', padding: '1rem 1.25rem',
                 border: '1px solid rgba(52,211,153,0.25)',
               }}
@@ -219,7 +222,9 @@ const About = () => {
             <motion.div
               className="glass-strong"
               style={{
-                position: 'absolute', top: '-1.5rem', right: '-1.5rem',
+                position: 'absolute',
+                top: isMobile ? '0.5rem' : '-1.5rem',
+                right: isMobile ? '0.5rem' : '-1.5rem',
                 borderRadius: '16px', padding: '1rem 1.25rem',
                 border: '1px solid rgba(124,58,237,0.25)',
               }}
