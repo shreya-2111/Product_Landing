@@ -210,11 +210,11 @@ export default function Hero() {
       }}
     >
       {/* ── BG blooms ── */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.38) 0%, transparent 65%)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 55% at 95% 50%, rgba(6,182,212,0.2) 0%, transparent 60%)' }} />
+        {!isMobile && <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 55% at 95% 50%, rgba(6,182,212,0.2) 0%, transparent 60%)' }} />}
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 45% at 0% 100%, rgba(124,58,237,0.15) 0%, transparent 60%)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 65% at 75% 55%, rgba(109,40,217,0.22) 0%, transparent 65%)' }} />
+        {!isMobile && <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 55% 65% at 75% 55%, rgba(109,40,217,0.22) 0%, transparent 65%)' }} />}
       </div>
 
       {/* ── Grid ── */}
