@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState, Suspense } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Environment, ContactShadows, Preload, useProgress, Html } from '@react-three/drei'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ShoppingCart, Play, ChevronDown, Zap, Wifi, Shield } from 'lucide-react'
-import HeadphoneModel from '../components/HeadphoneModel'
+import * as THREE from 'three'
 import glbUrl from '../assets/headphone.glb?url'
 import { useIsMobile } from '../hooks/useIsMobile'
+
+const HeadphoneModel = lazy(() => import('../components/HeadphoneModel'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -118,66 +120,108 @@ const Stat = ({ value, label, delay }) => (
 
 /* ─── Hero ───────────────────────────────────────────────── */
 export default function Hero() {
-  const sectionRef = useRef()
-  const rightRef   = useRef()
-  const imgRef     = useRef()
-  const glowRef    = useRef()
-  const ring1Ref   = useRef()
-  const ring2Ref   = useRef()
-  const shadowRef  = useRef()
-  const isMobile   = useIsMobile()
-
-  /* mouse parallax — desktop only */
+  const sectionRef = useRef(null)
+  const rightRef = useRef(null)
+  const glowRef = useRef(null)
+  const ring1Ref = useRef(null)
+  const ring2Ref = useRef(null)
+  const isMobile = useIsMobile()
+  const [showScene, setShowScene] = useState(false)
+  const [heroCanvasReady, setHeroCanvasReady] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const reducedMotion = useMemo(() => isMobile || prefersReducedMotion, [isMobile, prefersReducedMotion])
+  const mouseRef = useRef({ x: 0, y: 0 })
   const mx = useMotionValue(0)
   const my = useMotionValue(0)
   const sx = useSpring(mx, { stiffness: 50, damping: 16 })
   const sy = useSpring(my, { stiffness: 50, damping: 16 })
-  const rotX  = useTransform(sy, [-0.5, 0.5], [6, -6])
-  const rotY  = useTransform(sx, [-0.5, 0.5], [-8, 8])
+  const rotX = useTransform(sy, [-0.5, 0.5], [6, -6])
+  const rotY = useTransform(mx, [-0.5, 0.5], [-8, 8])
 
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
+  const heroGL = useMemo(() => ({
+    antialias: !isMobile,
+    alpha: true,
+    powerPreference: isMobile ? 'low-power' : 'high-performance',
+  }), [isMobile])
 
-  const onMove = (e) => {
-    if (isMobile) return
-    const r = sectionRef.current.getBoundingClientRect()
-    const nx = (e.clientX - r.left) / r.width  - 0.5
-    const ny = (e.clientY - r.top)  / r.height - 0.5
-    mx.set(nx); my.set(ny)
-    setMouse({ x: nx, y: ny })
+  const onMove = (event) => {
+    if (reducedMotion || !sectionRef.current) return
+    const rect = sectionRef.current.getBoundingClientRect()
+    const nx = (event.clientX - rect.left) / rect.width - 0.5
+    const ny = (event.clientY - rect.top) / rect.height - 0.5
+    mouseRef.current = { x: nx, y: ny }
+    mx.set(nx)
+    my.set(ny)
   }
-  const onLeave = () => { mx.set(0); my.set(0); setMouse({ x: 0, y: 0 }) }
+
+  const onLeave = () => {
+    mouseRef.current = { x: 0, y: 0 }
+    mx.set(0)
+    my.set(0)
+  }
 
   useEffect(() => {
-    /* ── initial hidden state ── */
-    gsap.set(glowRef.current,  { opacity: 0, scale: 0.4 })
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+    const handleChange = (event) => setPrefersReducedMotion(event.matches)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  useEffect(() => {
+    const target = sectionRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowScene(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px' },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!showScene) {
+      setHeroCanvasReady(false)
+      return
+    }
+
+    const handle = requestAnimationFrame(() => setHeroCanvasReady(true))
+    return () => cancelAnimationFrame(handle)
+  }, [showScene])
+
+  useEffect(() => {
+    gsap.set(glowRef.current, { opacity: 0, scale: 0.4 })
     gsap.set(ring1Ref.current, { opacity: 0, scale: 0.3, rotate: -60 })
     gsap.set(ring2Ref.current, { opacity: 0, scale: 0.2 })
     gsap.set('#hero-left > *', { opacity: 0, y: 50 })
 
-    /* ── entrance timeline ── */
     const tl = gsap.timeline({ delay: isMobile ? 0.1 : 0.2 })
     tl
-      .to(glowRef.current,  { opacity: 1, scale: 1, duration: isMobile ? 0.7 : 1.3, ease: 'power2.out' })
+      .to(glowRef.current, { opacity: 1, scale: 1, duration: isMobile ? 0.7 : 1.3, ease: 'power2.out' })
       .to(ring1Ref.current, { opacity: 1, scale: 1, rotate: 0, duration: isMobile ? 0.8 : 1.5, ease: 'back.out(1.6)' }, '-=0.6')
       .to(ring2Ref.current, { opacity: 1, scale: 1, duration: isMobile ? 0.7 : 1.3, ease: 'back.out(1.4)' }, '-=0.7')
       .to('#hero-left > *', { opacity: 1, y: 0, duration: isMobile ? 0.5 : 0.9, stagger: isMobile ? 0.07 : 0.12, ease: 'power3.out' }, '-=0.5')
 
-    /* ── glow pulse — slower / lighter on mobile ── */
-    gsap.to(glowRef.current, {
-      scale: 1.1, opacity: isMobile ? 0.7 : 0.85,
-      duration: isMobile ? 5 : 3.5,
-      repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1,
-    })
+    if (!reducedMotion) {
+      gsap.to(glowRef.current, {
+        scale: 1.1, opacity: isMobile ? 0.7 : 0.85,
+        duration: isMobile ? 5 : 3.5,
+        repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1,
+      })
+      gsap.to(ring1Ref.current, { rotate: -360, duration: isMobile ? 60 : 28, repeat: -1, ease: 'none' })
+      gsap.to(ring2Ref.current, { rotate: 360, duration: isMobile ? 40 : 18, repeat: -1, ease: 'none' })
+    }
 
-    /* ── rings spin — much slower on mobile to save GPU ── */
-    gsap.to(ring1Ref.current, { rotate: -360, duration: isMobile ? 60 : 28, repeat: -1, ease: 'none' })
-    gsap.to(ring2Ref.current, { rotate:  360, duration: isMobile ? 40 : 18, repeat: -1, ease: 'none' })
-
-    /* ── scroll parallax — skip on mobile ── */
-    if (!isMobile) {
+    if (!isMobile && !prefersReducedMotion) {
       gsap.to(rightRef.current, {
-        y: -70, scale: 0.93,
-        ease: 'none',
+        y: -70, scale: 0.93, ease: 'none',
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top top', end: 'bottom top',
@@ -186,8 +230,7 @@ export default function Hero() {
       })
 
       gsap.to(glowRef.current, {
-        opacity: 0.1, scale: 0.5,
-        ease: 'none',
+        opacity: 0.1, scale: 0.5, ease: 'none',
         scrollTrigger: {
           trigger: sectionRef.current,
           start: '25% top', end: 'bottom top',
@@ -195,7 +238,7 @@ export default function Hero() {
         },
       })
     }
-  }, [isMobile])
+  }, [isMobile, prefersReducedMotion, reducedMotion])
 
   return (
     <section
@@ -203,11 +246,7 @@ export default function Hero() {
       id="hero"
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      style={{
-        position: 'relative', minHeight: '100vh',
-        display: 'flex', alignItems: 'center',
-        overflow: 'hidden', background: '#050816',
-      }}
+      style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', background: '#050816' }}
     >
       {/* ── BG blooms ── */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
@@ -385,9 +424,12 @@ export default function Hero() {
             }} />
 
             {/* ── Canvas fills the box — GLB model inside ── */}
+                    {showScene && heroCanvasReady ? (
             <Canvas
+              dpr={[1, 1.5]}
               camera={{ position: [0, 0, 3.2], fov: 42 }}
-              gl={{ antialias: !isMobile, alpha: true, powerPreference: isMobile ? 'low-power' : 'high-performance' }}
+              gl={heroGL}
+              onCreated={(state) => state.gl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))}
               style={{
                 position: 'absolute', inset: 0,
                 width: '100%', height: '100%',
@@ -405,10 +447,13 @@ export default function Hero() {
               <Environment preset="night" />
               {!isMobile && <ContactShadows position={[0, -1.3, 0]} opacity={0.55} scale={5} blur={2.5} far={3.5} color="#4c1d95" />}
               <Suspense fallback={<Loader />}>
-                <HeadphoneModel url={glbUrl} mouseX={isMobile ? 0 : mouse.x} mouseY={isMobile ? 0 : mouse.y} isMobile={isMobile} />
+                <HeadphoneModel url={glbUrl} mouseRef={mouseRef} isMobile={isMobile} />
               </Suspense>
               <Preload all />
             </Canvas>
+            ) : (
+              <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', background: 'transparent' }} />
+            )}
           </motion.div>
 
           {/* ── Badge: top-left ── */}

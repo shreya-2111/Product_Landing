@@ -3,7 +3,7 @@ import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export default function HeadphoneModel({ url, mouseX = 0, mouseY = 0, isMobile = false }) {
+export default function HeadphoneModel({ url, mouseRef, isMobile = false }) {
   const groupRef = useRef()
   const { scene } = useGLTF(url)
 
@@ -61,6 +61,22 @@ export default function HeadphoneModel({ url, mouseX = 0, mouseY = 0, isMobile =
         groupRef.current.remove(groupRef.current.children[0])
       }
       groupRef.current.add(clone)
+      window.__HeadphoneModelState = {
+        hasChildren: clone.children.length > 0,
+        meshCount: clone.children.filter((c) => c.isMesh).length,
+        totalNodes: clone.children.length,
+        meshDetails: clone.children.filter((c) => c.isMesh).map((mesh) => ({
+          name: mesh.name,
+          visible: mesh.visible,
+          opacity: mesh.material?.opacity,
+          transparent: mesh.material?.transparent,
+          metalness: mesh.material?.metalness,
+          roughness: mesh.material?.roughness,
+          side: mesh.material?.side,
+          position: mesh.position.toArray(),
+          scale: mesh.scale.toArray(),
+        })),
+      }
     }
   }, [scene, isMobile])
 
@@ -103,22 +119,16 @@ export default function HeadphoneModel({ url, mouseX = 0, mouseY = 0, isMobile =
       return
     }
 
-    // Circular orbit (small radius so it stays inside ring)
-    const r     = 0.09
+    const r = 0.09
     const speed = 0.38
     g.position.x = Math.sin(t * speed) * r
     g.position.y = Math.cos(t * speed) * r
 
-    // Mouse tilt — smooth lerp
-    g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, mouseX * 0.6, 0.05)
-    g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, mouseY * 0.3, 0.05)
+    const { x: mx, y: my } = mouseRef?.current || { x: 0, y: 0 }
+    g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, mx * 0.6, 0.05)
+    g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, my * 0.3, 0.05)
 
-    // Subtle roll following orbit direction
-    g.rotation.z = THREE.MathUtils.lerp(
-      g.rotation.z,
-      Math.sin(t * speed) * 0.04,
-      0.05
-    )
+    g.rotation.z = THREE.MathUtils.lerp(g.rotation.z, Math.sin(t * speed) * 0.04, 0.05)
   })
 
   return <group ref={groupRef} />
